@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: |
           xcodebuild build \
-            -project KeepingYouAwake.xcodeproj \
+            -workspace KeepingYouAwake.xcworkspace \
             -scheme KeepingYouAwake \
             -configuration Release \
             -derivedDataPath build \
