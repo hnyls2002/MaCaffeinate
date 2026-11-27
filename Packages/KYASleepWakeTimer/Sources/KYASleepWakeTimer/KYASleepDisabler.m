@@ -42,7 +42,7 @@ static BOOL KYASetSystemSleepDisabled(BOOL disabled)
     task.standardError = NSFileHandle.fileHandleWithNullDevice;
 
     dispatch_semaphore_t exited = dispatch_semaphore_create(0);
-    task.terminationHandler = ^(NSTask *task) {
+    task.terminationHandler = ^(NSTask *exitedTask) {
         dispatch_semaphore_signal(exited);
     };
     if([task launchAndReturnError:nil] == NO)
@@ -90,21 +90,6 @@ static BOOL KYARunAsAdministrator(NSString *script, NSError **error)
         }
     }
     return NO;
-}
-
-// Re-enables system sleep through the sudoers rule. If that fails, e.g. because
-// the rule was removed by hand, asks for an administrator password on the main thread.
-static BOOL KYARestoreSystemSleep(void)
-{
-    if(KYASetSystemSleepDisabled(NO))
-    {
-        return YES;
-    }
-    if(NSThread.isMainThread == NO)
-    {
-        return NO;
-    }
-    return KYARunAsAdministrator(@"/usr/bin/pmset -a disablesleep 0", NULL);
 }
 
 static void KYAPostAuthorizationDidChange(void)
@@ -185,7 +170,7 @@ static void KYAPostAuthorizationDidChange(void)
     {
         return;
     }
-    if(KYARestoreSystemSleep())
+    if(KYASetSystemSleepDisabled(NO))
     {
         [defaults removeObjectForKey:KYASleepLeftDisabledKey];
     }
@@ -247,8 +232,9 @@ static void KYAPostAuthorizationDidChange(void)
             return;
         }
 
-        // On failure the marker stays, so the next launch tries again.
-        if(KYARestoreSystemSleep())
+        // Fails only when the rule stopped working, e.g. removed by hand. The marker
+        // stays then, so the next launch tries again.
+        if(KYASetSystemSleepDisabled(NO))
         {
             [NSUserDefaults.standardUserDefaults removeObjectForKey:KYASleepLeftDisabledKey];
             os_log(self.log, "System sleep restored.");

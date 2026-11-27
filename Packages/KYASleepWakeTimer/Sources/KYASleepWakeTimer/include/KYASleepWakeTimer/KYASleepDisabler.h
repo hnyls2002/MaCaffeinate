@@ -49,8 +49,7 @@ KYA_EXPORT const NSNotificationName KYASleepDisablerAuthorizationDidChangeNotifi
 /// process exits, whichever comes first.
 - (BOOL)disableSleepWithError:(NSError **)error;
 
-/// Re-enables system sleep if this instance disabled it. When the sudoers rule
-/// no longer works, asks for an administrator password if on the main thread.
+/// Re-enables system sleep if this instance disabled it.
 - (void)restoreSleep;
 
 @end

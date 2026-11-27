@@ -82,19 +82,24 @@
 - (void)setClosedLidAvailable:(BOOL)closedLidAvailable
 {
     _closedLidAvailable = closedLidAvailable;
-    // Refresh the tooltip
-    self.appearance = self.appearance;
+    [self applyAppearance];
 }
 
 - (void)setAppearance:(KYAStatusItemAppearance)appearance
 {
     [self willChangeValueForKey:@"appearance"];
     _appearance = appearance;
-    
+    [self applyAppearance];
+    [self didChangeValueForKey:@"appearance"];
+}
+
+// Sets the image and the tooltip for the appearance and the closed lid availability.
+- (void)applyAppearance
+{
     Auto button = self.systemStatusItem.button;
     Auto imageProvider = KYAStatusItemImageProvider.currentProvider;
     
-    switch(appearance)
+    switch(self.appearance)
     {
         case KYAStatusItemAppearanceActive:
             button.image = imageProvider.activeIconImage;
@@ -109,8 +114,6 @@
             button.toolTip = KYA_L10N_CLICK_TO_PREVENT_SLEEP;
             break;
     }
-    
-    [self didChangeValueForKey:@"appearance"];
 }
 
 #pragma mark - Menu

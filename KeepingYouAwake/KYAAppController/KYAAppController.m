@@ -215,7 +215,7 @@
     [self activateApplication];
     if([alert runModal] != NSAlertFirstButtonReturn)
     {
-        NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+        [self declineClosedLid];
         return NO;
     }
     
@@ -224,12 +224,19 @@
     {
         if(error == nil) // The password prompt was cancelled
         {
-            NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+            [self declineClosedLid];
         }
         [self presentClosedLidError:error];
         return NO;
     }
     return YES;
+}
+
+// Clicks skip the closed lid step from now on, until the user authorizes it in the settings.
+- (void)declineClosedLid
+{
+    NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+    self.statusItemController.closedLidAvailable = [self isClosedLidAvailable];
 }
 
 // A nil error means there is nothing to report, e.g. a cancelled prompt.
@@ -264,14 +271,17 @@
     // Removing the authorization opts out; the revocation already restored sleep.
     if([KYASleepDisabler isAuthorized] == NO)
     {
-        NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+        [self declineClosedLid];
         if([self.sleepWakeTimer isClosedLidEnabled])
         {
             [self.sleepWakeTimer disableClosedLid];
             self.statusItemController.appearance = KYAStatusItemAppearanceActive;
         }
     }
-    self.statusItemController.closedLidAvailable = [self isClosedLidAvailable];
+    else
+    {
+        self.statusItemController.closedLidAvailable = [self isClosedLidAvailable];
+    }
 }
 
 #pragma mark - Default Time Interval
@@ -606,11 +616,12 @@
 
     AutoWeak weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
+        Auto strongSelf = weakSelf;
         NSTimeInterval seconds = activationDuration.seconds;
-        [weakSelf activateTimerWithTimeInterval:seconds];
+        [strongSelf activateTimerWithTimeInterval:seconds];
         if(closedLidEnabled)
         {
-            [weakSelf enableClosedLid];
+            [strongSelf enableClosedLid];
         }
     });
 }

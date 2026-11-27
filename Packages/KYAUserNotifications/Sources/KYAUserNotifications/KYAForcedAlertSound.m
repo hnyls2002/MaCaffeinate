@@ -42,8 +42,11 @@ static void KYASetOutputProperty(AudioObjectID device, AudioObjectPropertySelect
     AudioObjectSetPropertyData(device, &address, 0, NULL, size, value);
 }
 
+// The data source of the built-in output when it plays through the speakers.
+static UInt32 const KYABuiltInSpeakerDataSource = 'ispk';
+
 // YES for the built-in speakers. Headphones keep their volume, since a sudden
-// loud sound there could hurt.
+// loud sound there could hurt, and so does any output that cannot be told apart.
 static BOOL KYAIsBuiltInSpeaker(AudioObjectID device)
 {
     UInt32 transportType = 0;
@@ -54,11 +57,8 @@ static BOOL KYAIsBuiltInSpeaker(AudioObjectID device)
     }
     // The built-in output switches between the speakers and the headphone jack.
     UInt32 dataSource = 0;
-    if(KYAGetOutputProperty(device, kAudioDevicePropertyDataSource, &dataSource, sizeof(dataSource)))
-    {
-        return dataSource == 'ispk';
-    }
-    return YES;
+    return KYAGetOutputProperty(device, kAudioDevicePropertyDataSource, &dataSource, sizeof(dataSource))
+        && dataSource == KYABuiltInSpeakerDataSource;
 }
 
 @interface KYAForcedAlertSound () <NSSoundDelegate>
