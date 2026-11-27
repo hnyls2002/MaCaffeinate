@@ -25,6 +25,9 @@
 
 @property (nonatomic) NSTimeInterval workspaceScheduledTimeInterval;
 
+// Beeps when the lid closes while the Mac is kept awake with its lid closed.
+@property (nonatomic) KYAForcedAlertSound *lidCloseAlarm;
+
 // Battery Status
 @property (nonatomic, direct, getter=isBatteryOverrideEnabled) BOOL batteryOverrideEnabled;
 
@@ -41,6 +44,11 @@
     self = [super init];
     if(self)
     {
+        [NSUserDefaults.standardUserDefaults registerDefaults:@{
+            KYAUserDefaultsKeyLidCloseAlarmEnabled: @YES,
+        }];
+        self.lidCloseAlarm = [[KYAForcedAlertSound alloc] initWithSoundNamed:@"Sosumi" minimumVolume:0.75f];
+
         [self configureStatusItemController];
         [self configureSleepWakeTimer];
         [self configureEventHandler];
@@ -60,6 +68,10 @@
                    selector:@selector(batteryCapacityThresholdDidChange:)
                        name:kKYABatteryCapacityThresholdDidChangeNotification
                      object:nil];
+        [center addObserver:self
+                   selector:@selector(sleepDisablerAuthorizationDidChange:)
+                       name:KYASleepDisablerAuthorizationDidChangeNotification
+                     object:nil];
         
         [self registerForWorkspaceSessionNotifications];
     }
@@ -72,6 +84,7 @@
     [center removeObserver:self name:NSApplicationDidFinishLaunchingNotification object:nil];
     [center removeObserver:self name:NSApplicationDidChangeScreenParametersNotification object:nil];
     [center removeObserver:self name:kKYABatteryCapacityThresholdDidChangeNotification object:nil];
+    [center removeObserver:self name:KYASleepDisablerAuthorizationDidChangeNotification object:nil];
     
     [self unregisterFromWorkspaceSessionNotifications];
 }
@@ -101,6 +114,9 @@
 
 - (void)configureSleepWakeTimer
 {
+    // A crash or power loss can leave the closed lid mode on.
+    [KYASleepDisabler restoreSleepLeftDisabledByEarlierRun];
+
     Auto sleepWakeTimer = [KYASleepWakeTimer new];
     sleepWakeTimer.delegate = self;
     self.sleepWakeTimer = sleepWakeTimer;
@@ -154,6 +170,108 @@
     {
         [self.sleepWakeTimer invalidate];
     }
+}
+
+#pragma mark - Closed Lid
+
+// A Mac without a lid has nothing to keep awake while closed. A user who
+// declined the authorization turns the mode on in the advanced settings.
+- (BOOL)isClosedLidAvailable
+{
+    if([KYADevice.currentDevice.lidMonitor hasLid] == NO)
+    {
+        return NO;
+    }
+    return [KYASleepDisabler isAuthorized] || [NSUserDefaults.standardUserDefaults kya_isClosedLidPromptDeclined] == NO;
+}
+
+// Keeps the Mac awake with its lid closed while the timer runs,
+// asking for the one-time authorization first if needed.
+- (BOOL)enableClosedLid
+{
+    if([KYASleepDisabler isAuthorized] == NO && [self requestClosedLidAuthorization] == NO)
+    {
+        return NO;
+    }
+    
+    // The timer may have stopped during the prompts; then nothing is reported.
+    NSError *error = nil;
+    if([self.sleepWakeTimer enableClosedLidWithError:&error] == NO)
+    {
+        [self presentClosedLidError:error];
+        return NO;
+    }
+    self.statusItemController.appearance = KYAStatusItemAppearanceActiveClosedLid;
+    return YES;
+}
+
+- (BOOL)requestClosedLidAuthorization
+{
+    Auto alert = [NSAlert new];
+    alert.messageText = KYA_L10N_CLOSED_LID_AUTHORIZATION_TITLE;
+    alert.informativeText = KYA_L10N_CLOSED_LID_AUTHORIZATION_MESSAGE;
+    [alert addButtonWithTitle:KYA_L10N_CONTINUE];
+    [alert addButtonWithTitle:KYA_L10N_CANCEL];
+    [self activateApplication];
+    if([alert runModal] != NSAlertFirstButtonReturn)
+    {
+        NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+        return NO;
+    }
+    
+    NSError *error = nil;
+    if([KYASleepDisabler authorizeWithError:&error] == NO)
+    {
+        if(error == nil) // The password prompt was cancelled
+        {
+            NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+        }
+        [self presentClosedLidError:error];
+        return NO;
+    }
+    return YES;
+}
+
+// A nil error means there is nothing to report, e.g. a cancelled prompt.
+- (void)presentClosedLidError:(nullable NSError *)error
+{
+    if(error == nil)
+    {
+        return;
+    }
+    
+    Auto alert = [NSAlert new];
+    alert.messageText = KYA_L10N_CLOSED_LID_FAILED_TITLE;
+    alert.informativeText = error.localizedDescription ?: @"";
+    [self activateApplication];
+    [alert runModal];
+}
+
+- (void)activateApplication
+{
+    if(@available(macOS 14.0, *))
+    {
+        [NSApplication.sharedApplication activate];
+    }
+    else
+    {
+        [NSApplication.sharedApplication activateIgnoringOtherApps:YES];
+    }
+}
+
+- (void)sleepDisablerAuthorizationDidChange:(NSNotification *)notification
+{
+    // Removing the authorization opts out; the revocation already restored sleep.
+    if([KYASleepDisabler isAuthorized] == NO)
+    {
+        NSUserDefaults.standardUserDefaults.kya_closedLidPromptDeclined = YES;
+        if([self.sleepWakeTimer isClosedLidEnabled])
+        {
+            [self.sleepWakeTimer disableClosedLid];
+            self.statusItemController.appearance = KYAStatusItemAppearanceActive;
+        }
+    }
+    self.statusItemController.closedLidAvailable = [self isClosedLidAvailable];
 }
 
 #pragma mark - Default Time Interval
@@ -226,6 +344,15 @@
             [self terminateTimer];
         }
     }
+    else if([deviceParameter isEqualToString:KYADeviceParameterLid])
+    {
+        if([defaults kya_isLidCloseAlarmEnabled] == NO) { return; }
+        
+        if([device.lidMonitor isLidClosed] && [self.sleepWakeTimer isClosedLidEnabled])
+        {
+            [self.lidCloseAlarm play];
+        }
+    }
 }
 
 - (void)enableDevicePowerMonitoring
@@ -250,6 +377,7 @@
     {
         device.lowPowerModeMonitoringEnabled = YES;
     }
+    device.lidMonitoringEnabled = YES;
 }
 
 - (void)disableDevicePowerMonitoring
@@ -263,6 +391,7 @@
     
     device.batteryMonitoringEnabled = NO;
     device.lowPowerModeMonitoringEnabled = NO;
+    device.lidMonitoringEnabled = NO;
 }
 
 #pragma mark - Battery Capacity Threshold Changes
@@ -345,7 +474,14 @@
     
     [eventHandler registerActionNamed:@"toggle" block:^(KYAEvent *event) {
         Auto strongSelf = weakSelf;
-        [strongSelf statusItemControllerShouldPerformPrimaryAction:strongSelf.statusItemController];
+        if([strongSelf.sleepWakeTimer isScheduled])
+        {
+            [strongSelf terminateTimer];
+        }
+        else
+        {
+            [strongSelf activateTimer];
+        }
     }];
 }
 
@@ -428,14 +564,24 @@
 
 - (void)statusItemControllerShouldPerformPrimaryAction:(KYAStatusItemController *)controller
 {
-    if([self.sleepWakeTimer isScheduled])
-    {
-        [self terminateTimer];
-    }
-    else
+    // Each click moves on: inactive, active, active with the lid closed, inactive.
+    // The closed lid step is skipped where it is not available.
+    Auto sleepWakeTimer = self.sleepWakeTimer;
+    if([sleepWakeTimer isScheduled] == NO)
     {
         [self activateTimer];
+        return;
     }
+    
+    if([sleepWakeTimer isClosedLidEnabled] == NO && [self isClosedLidAvailable])
+    {
+        if([self enableClosedLid])
+        {
+            return;
+        }
+    }
+    
+    [self terminateTimer];
 }
 
 #pragma mark - KYAActivationDurationsMenuControllerDelegate
@@ -454,12 +600,18 @@
 
 - (void)activationDurationsMenuController:(KYAActivationDurationsMenuController *)controller didSelectActivationDuration:(KYAActivationDuration *)activationDuration
 {
+    // A new duration keeps the closed lid mode.
+    BOOL closedLidEnabled = [self.sleepWakeTimer isClosedLidEnabled];
     [self terminateTimer];
 
     AutoWeak weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         NSTimeInterval seconds = activationDuration.seconds;
         [weakSelf activateTimerWithTimeInterval:seconds];
+        if(closedLidEnabled)
+        {
+            [weakSelf enableClosedLid];
+        }
     });
 }
 
@@ -473,6 +625,7 @@
 - (void)sleepWakeTimer:(KYASleepWakeTimer *)sleepWakeTimer willActivateWithTimeInterval:(NSTimeInterval)timeInterval
 {
     // Update the status item
+    self.statusItemController.closedLidAvailable = [self isClosedLidAvailable];
     self.statusItemController.appearance = KYAStatusItemAppearanceActive;
     
     [self enableDevicePowerMonitoring];

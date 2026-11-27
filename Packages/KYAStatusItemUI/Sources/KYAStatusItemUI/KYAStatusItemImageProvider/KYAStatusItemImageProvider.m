@@ -11,6 +11,29 @@
 #import "NSURL+KYAStatusItemImage.h"
 #import "NSImage+KYAStatusItemImage.h"
 
+// Draws a bolt to the right of the active icon, vertically centered.
+static NSImage *KYACreateClosedLidIconImage(NSImage *activeIcon)
+{
+    Auto configuration = [NSImageSymbolConfiguration configurationWithPointSize:11.0 weight:NSFontWeightBlack];
+    Auto bolt = [[NSImage imageWithSystemSymbolName:@"bolt.fill" accessibilityDescription:nil]
+                 imageWithSymbolConfiguration:configuration];
+    NSSize iconSize = activeIcon.size;
+    NSSize boltSize = bolt.size;
+    NSSize size = NSMakeSize(iconSize.width + boltSize.width, iconSize.height);
+
+    Auto image = [NSImage imageWithSize:size flipped:NO drawingHandler:^BOOL(NSRect rect) {
+        [activeIcon drawInRect:NSMakeRect(0.0, 0.0, iconSize.width, iconSize.height)];
+        NSRect boltRect = NSMakeRect(NSMaxX(rect) - boltSize.width,
+                                     round((NSHeight(rect) - boltSize.height) / 2.0),
+                                     boltSize.width,
+                                     boltSize.height);
+        [bolt drawInRect:boltRect];
+        return YES;
+    }];
+    image.template = YES;
+    return image;
+}
+
 @implementation KYAStatusItemImageProvider
 
 + (KYAStatusItemImageProvider *)currentProvider
@@ -69,6 +92,7 @@
     {
         self.activeIconImage = activeIcon;
         self.inactiveIconImage = inactiveIcon;
+        self.closedLidIconImage = KYACreateClosedLidIconImage(activeIcon);
     }
     return self;
 }

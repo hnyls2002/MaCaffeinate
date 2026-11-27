@@ -39,13 +39,8 @@
 - (void)setValue:(BOOL)value
 {
     [self willChangeValueForKey:@"value"];
-    if(value == YES) {
-        [NSUserDefaults.standardUserDefaults setBool:value forKey:self.key];
-    }
-    else
-    {
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:self.key];
-    }
+    // Stored even when NO, so that a key registered with a YES default can be turned off.
+    [NSUserDefaults.standardUserDefaults setBool:value forKey:self.key];
     [self didChangeValueForKey:@"value"];
     
     [NSUserDefaults.standardUserDefaults synchronize];

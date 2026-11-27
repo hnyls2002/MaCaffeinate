@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface KYAStatusItemImageProvider ()
 @property (nonatomic, readwrite) NSImage *activeIconImage;
 @property (nonatomic, readwrite) NSImage *inactiveIconImage;
+@property (nonatomic, readwrite) NSImage *closedLidIconImage;
 
 /// The designated initializer for an image provider.
 /// @param activeIcon An NSImage representing the active state, a nil value sets the default icon.

@@ -79,28 +79,35 @@
 
 #pragma mark - Appearance
 
-- (KYAStatusItemAppearance)appearance
+- (void)setClosedLidAvailable:(BOOL)closedLidAvailable
 {
-    Auto menubarIcon = KYAStatusItemImageProvider.currentProvider;
-    return self.systemStatusItem.image == menubarIcon.activeIconImage;
+    _closedLidAvailable = closedLidAvailable;
+    // Refresh the tooltip
+    self.appearance = self.appearance;
 }
 
 - (void)setAppearance:(KYAStatusItemAppearance)appearance
 {
     [self willChangeValueForKey:@"appearance"];
+    _appearance = appearance;
     
     Auto button = self.systemStatusItem.button;
     Auto imageProvider = KYAStatusItemImageProvider.currentProvider;
     
-    if(appearance == KYAStatusItemAppearanceActive)
+    switch(appearance)
     {
-        button.image = imageProvider.activeIconImage;
-        button.toolTip = KYA_L10N_CLICK_TO_ALLOW_SLEEP;
-    }
-    else
-    {
-        button.image = imageProvider.inactiveIconImage;
-        button.toolTip = KYA_L10N_CLICK_TO_PREVENT_SLEEP;
+        case KYAStatusItemAppearanceActive:
+            button.image = imageProvider.activeIconImage;
+            button.toolTip = self.closedLidAvailable ? KYA_L10N_CLICK_TO_PREVENT_SLEEP_WITH_LID_CLOSED : KYA_L10N_CLICK_TO_ALLOW_SLEEP;
+            break;
+        case KYAStatusItemAppearanceActiveClosedLid:
+            button.image = imageProvider.closedLidIconImage;
+            button.toolTip = KYA_L10N_CLICK_TO_ALLOW_SLEEP;
+            break;
+        case KYAStatusItemAppearanceInactive:
+            button.image = imageProvider.inactiveIconImage;
+            button.toolTip = KYA_L10N_CLICK_TO_PREVENT_SLEEP;
+            break;
     }
     
     [self didChangeValueForKey:@"appearance"];

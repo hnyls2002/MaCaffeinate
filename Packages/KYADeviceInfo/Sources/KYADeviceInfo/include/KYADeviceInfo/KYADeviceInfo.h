@@ -9,4 +9,5 @@
 
 #import <KYADeviceInfo/KYABatteryMonitor.h>
 #import <KYADeviceInfo/KYALowPowerModeMonitor.h>
+#import <KYADeviceInfo/KYALidMonitor.h>
 #import <KYADeviceInfo/KYADevice.h>

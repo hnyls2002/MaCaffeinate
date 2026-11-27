@@ -75,6 +75,14 @@ KYA_GENERATE_BOOL_PROPERTY(isLowPowerModeMonitoringEnabled,
                            lowPowerModeMonitoringEnabled,
                            LowPowerModeMonitoringEnabled);
 
+KYA_GENERATE_BOOL_PROPERTY(isLidCloseAlarmEnabled,
+                           lidCloseAlarmEnabled,
+                           LidCloseAlarmEnabled);
+
+KYA_GENERATE_BOOL_PROPERTY(isClosedLidPromptDeclined,
+                           closedLidPromptDeclined,
+                           ClosedLidPromptDeclined);
+
 #pragma mark - Battery Capacity Threshold
 
 NSString * const KYAUserDefaultsKeyBatteryCapacityThreshold = @"info.marcel-dierkes.KeepingYouAwake.BatteryCapacityThreshold";

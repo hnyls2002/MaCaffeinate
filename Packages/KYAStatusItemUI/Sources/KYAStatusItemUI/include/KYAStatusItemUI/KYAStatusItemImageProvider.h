@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// An icon image representing the inactive state.
 @property (nonatomic, readonly) NSImage *inactiveIconImage;
 
+/// The active icon with a bolt beside it, for keeping awake with the lid closed.
+@property (nonatomic, readonly) NSImage *closedLidIconImage;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

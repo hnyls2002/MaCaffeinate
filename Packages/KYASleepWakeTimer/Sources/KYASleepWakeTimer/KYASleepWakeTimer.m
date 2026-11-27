@@ -15,6 +15,7 @@ NSTimeInterval const KYASleepWakeTimeIntervalIndefinite = 0;
 @property (copy, nonatomic, readwrite) NSDate *fireDate;
 @property (nonatomic, readwrite) NSTimeInterval scheduledTimeInterval;
 @property (nonatomic) NSTask *caffeinateTask;
+@property (nonatomic) KYASleepDisabler *sleepDisabler;
 @property (nonatomic) os_log_t log;
 @end
 
@@ -35,6 +36,7 @@ NSTimeInterval const KYASleepWakeTimeIntervalIndefinite = 0;
             [weakSelf invalidate];
         }];
         
+        self.sleepDisabler = [KYASleepDisabler new];
         self.log = KYALogCreateWithCategory("SleepWakeTimer");
     }
     return self;
@@ -90,6 +92,32 @@ NSTimeInterval const KYASleepWakeTimeIntervalIndefinite = 0;
     return NO;
 }
 
+#pragma mark - Closed Lid
+
+- (BOOL)isClosedLidEnabled
+{
+    return [self.sleepDisabler isSleepDisabled];
+}
+
+- (BOOL)enableClosedLidWithError:(NSError **)error
+{
+    // The timer may have stopped while the caller waited for authorization.
+    if([self isScheduled] == NO)
+    {
+        if(error != NULL)
+        {
+            *error = nil;
+        }
+        return NO;
+    }
+    return [self.sleepDisabler disableSleepWithError:error];
+}
+
+- (void)disableClosedLid
+{
+    [self.sleepDisabler restoreSleep];
+}
+
 #pragma mark - Caffeinate Task Handling
 
 - (void)spawnCaffeinateTaskForTimeInterval:(NSTimeInterval)timeInterval
@@ -113,14 +141,24 @@ NSTimeInterval const KYASleepWakeTimeIntervalIndefinite = 0;
     [arguments addObject:[NSString stringWithFormat:@"-w %i",
                           NSProcessInfo.processInfo.processIdentifier]];
 
+    // A task that exited on its own may not have been cleaned up yet.
+    [self disableClosedLid];
+
     [self willChangeValueForKey:@"scheduled"];
     self.caffeinateTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/caffeinate"
                                                    arguments:[arguments copy]];
 
-    // Termination Handler
+    // Termination Handler, on the main queue like every other change to the timer
     AutoWeak weakSelf = self;
     self.caffeinateTask.terminationHandler = ^(NSTask *task) {
-        [weakSelf terminateWithForce:NO];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            Auto strongSelf = weakSelf;
+            // A new activation may have replaced this task in the meantime.
+            if(strongSelf.caffeinateTask == task)
+            {
+                [strongSelf terminateWithForce:NO];
+            }
+        });
     };
     [self didChangeValueForKey:@"scheduled"];
 }
@@ -135,6 +173,8 @@ NSTimeInterval const KYASleepWakeTimeIntervalIndefinite = 0;
 
 - (void)terminateWithForce:(BOOL)forcedTermination
 {
+    [self disableClosedLid];
+
     [self willChangeValueForKey:@"scheduled"];
     self.caffeinateTask = nil;
     self.scheduledTimeInterval = KYASleepWakeTimeIntervalIndefinite;
