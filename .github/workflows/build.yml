@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches: ['**']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project KeepingYouAwake.xcodeproj \
+            -scheme KeepingYouAwake \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= \
+            PROVISIONING_PROFILE_SPECIFIER= \
+            OTHER_CODE_SIGN_FLAGS=
+
+      - name: Package
+        run: |
+          APP=build/Build/Products/Release/MaCaffeinate.app
+          codesign --verify --deep --strict "$APP"
+          lipo -archs "$APP/Contents/MacOS/MaCaffeinate"
+          ditto -c -k --keepParent "$APP" MaCaffeinate.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MaCaffeinate
+          path: MaCaffeinate.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$GITHUB_REF_NAME" MaCaffeinate.zip --clobber
