@@ -1039,7 +1039,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MaCaffeinate;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
@@ -1063,7 +1063,7 @@
 					"@executable_path/../Frameworks",
 				);
 				OTHER_CODE_SIGN_FLAGS = "$(inherited) --timestamp";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MaCaffeinate;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
