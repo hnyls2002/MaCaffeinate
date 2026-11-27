@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import <KYAUserNotifications/KYAUserNotificationCenter.h>
+#import <KYAUserNotifications/KYAForcedAlertSound.h>
 #import <KYAUserNotifications/NSURL+KYAUserNotificationCenter.h>
 #import <KYAUserNotifications/NSWorkspace+KYAUserNotificationCenter.h>
 #import <KYAUserNotifications/NSDate+RemainingTime.h>

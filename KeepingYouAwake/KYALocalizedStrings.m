@@ -13,6 +13,7 @@
 #define KYA_L10N_OK NSLocalizedString(@"OK", @"OK")
 #define KYA_L10N_CANCEL NSLocalizedString(@"Cancel", @"Cancel")
 #define KYA_L10N_DEFAULT NSLocalizedString(@"Default", @"Default")
+#define KYA_L10N_CONTINUE NSLocalizedString(@"Continue", @"Continue")
 
 #pragma mark - Main Menu
 
@@ -53,7 +54,15 @@
 #define KYA_L10N_ALLOW_DISPLAY_SLEEP NSLocalizedString(@"Allow the display to sleep", @"Allow the display to sleep")
 #define KYA_L10N_ACTIVATE_ON_EXTERNAL_DISPLAY NSLocalizedString(@"Activate when an external display is connected", @"Activate when an external display is connected")
 #define KYA_L10N_DEACTIVATE_ON_USER_SWITCH NSLocalizedString(@"Deactivate when switched to another user account", @"Deactivate when switched to another user account")
+#define KYA_L10N_ALLOW_CLOSED_LID NSLocalizedString(@"Allow keeping the Mac awake with the lid closed (needs an administrator password)", @"Allow keeping the Mac awake with the lid closed (needs an administrator password)")
+#define KYA_L10N_LID_CLOSE_ALARM NSLocalizedString(@"Beep loudly when the lid is closed while the Mac stays awake", @"Beep loudly when the lid is closed while the Mac stays awake")
 #define KYA_L10N_DURATIONS_ALERT_REALLY_RESET_TITLE NSLocalizedString(@"Reset Activation Durations", @"Reset Activation Durations")
 #define KYA_L10N_DURATIONS_ALERT_REALLY_RESET_MESSAGE NSLocalizedString(@"Do you really want to reset the activation durations to the default values?", @"Do you really want to reset the activation durations to the default values?")
 
 #define KYA_L10N_SET_DEFAULT_ACTIVATION_DURATION(_str) [NSString stringWithFormat:NSLocalizedString(@"Set Default: %@", @"Set Default: %@"), (NSString *)(_str)]
+
+#pragma mark - Closed Lid
+
+#define KYA_L10N_CLOSED_LID_AUTHORIZATION_TITLE NSLocalizedString(@"Keep Your Mac Awake with the Lid Closed?", @"Keep Your Mac Awake with the Lid Closed?")
+#define KYA_L10N_CLOSED_LID_AUTHORIZATION_MESSAGE NSLocalizedString(@"This changes a system power setting, which needs your administrator password once. Afterwards it changes without a password. You can remove this permission in Settings > Advanced.", @"This changes a system power setting, which needs your administrator password once. Afterwards it changes without a password. You can remove this permission in Settings > Advanced.")
+#define KYA_L10N_CLOSED_LID_FAILED_TITLE NSLocalizedString(@"Could Not Keep Your Mac Awake with the Lid Closed", @"Could Not Keep Your Mac Awake with the Lid Closed")

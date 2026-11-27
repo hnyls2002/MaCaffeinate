@@ -21,6 +21,8 @@ KYA_EXPORT NSString * const KYAUserDefaultsKeyIsQuitOnTimerExpirationEnabled;
 KYA_EXPORT NSString * const KYAUserDefaultsKeyBatteryCapacityThresholdEnabled;
 KYA_EXPORT NSString * const KYAUserDefaultsKeyBatteryCapacityThreshold;
 KYA_EXPORT NSString * const KYAUserDefaultsKeyLowPowerModeMonitoringEnabled;
+KYA_EXPORT NSString * const KYAUserDefaultsKeyLidCloseAlarmEnabled;
+KYA_EXPORT NSString * const KYAUserDefaultsKeyClosedLidPromptDeclined;
 KYA_EXPORT NSString * const KYAUserDefaultsKeyPreReleaseUpdatesEnabled;
 
 @interface NSUserDefaults (KYAKeys)
@@ -45,6 +47,10 @@ KYA_EXPORT NSString * const KYAUserDefaultsKeyPreReleaseUpdatesEnabled;
 
 /// Returns YES if the sleep wake timer should deactivate when Low Power Mode is enabled.
 @property (nonatomic, getter=kya_isLowPowerModeMonitoringEnabled) BOOL kya_lowPowerModeMonitoringEnabled;
+/// Beep when the lid closes while the Mac is kept awake with its lid closed.
+@property (nonatomic, getter=kya_isLidCloseAlarmEnabled) BOOL kya_lidCloseAlarmEnabled;
+/// The user declined the closed lid authorization, so clicks skip the closed lid step.
+@property (nonatomic, getter=kya_isClosedLidPromptDeclined) BOOL kya_closedLidPromptDeclined;
 
 /// Returns YES if Sparkle should check for pre-release updates.
 @property (nonatomic, getter = kya_arePreReleaseUpdatesEnabled) BOOL kya_preReleaseUpdatesEnabled;

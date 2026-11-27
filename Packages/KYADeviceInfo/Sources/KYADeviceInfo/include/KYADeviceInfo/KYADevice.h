@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <KYADeviceInfo/KYABatteryMonitor.h>
 #import <KYADeviceInfo/KYALowPowerModeMonitor.h>
+#import <KYADeviceInfo/KYALidMonitor.h>
 #import <KYACommon/KYAExport.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -19,6 +20,7 @@ KYA_EXPORT NSString * const KYADeviceParameterKey;
 typedef NSString *KYADeviceParameter;
 KYA_EXPORT const KYADeviceParameter KYADeviceParameterBattery;
 KYA_EXPORT const KYADeviceParameter KYADeviceParameterLowPowerMode;
+KYA_EXPORT const KYADeviceParameter KYADeviceParameterLid;
 
 /// Provides access to physical device parameters, like battery status and Low Power Mode.
 @interface KYADevice : NSObject
@@ -53,6 +55,12 @@ KYA_EXPORT const KYADeviceParameter KYADeviceParameterLowPowerMode;
 ///
 /// Defaults to `NO`.
 @property(nonatomic, getter=isLowPowerModeMonitoringEnabled) BOOL lowPowerModeMonitoringEnabled;
+
+#pragma mark - Lid
+
+@property (nonatomic, readonly) KYALidMonitor *lidMonitor;
+
+@property(nonatomic, getter=isLidMonitoringEnabled) BOOL lidMonitoringEnabled;
 
 #pragma mark -
 

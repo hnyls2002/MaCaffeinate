@@ -411,6 +411,23 @@
         }
       }
     },
+    "Allow keeping the Mac awake with the lid closed (needs an administrator password)" : {
+      "comment" : "Allow keeping the Mac awake with the lid closed (needs an administrator password)",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许合盖时保持唤醒（需要管理员密码）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許闔上螢幕時保持喚醒（需要管理者密碼）"
+          }
+        }
+      }
+    },
     "Allow the display to sleep" : {
       "comment" : "Allow the display to sleep",
       "localizations" : {
@@ -597,6 +614,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "咖啡因耗盡"
+          }
+        }
+      }
+    },
+    "Beep loudly when the lid is closed while the Mac stays awake" : {
+      "comment" : "Beep loudly when the lid is closed while the Mac stays awake",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖保持唤醒时，合上盖子发出强制蜂鸣警告"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闔上螢幕仍保持喚醒時，闔上時發出強制警示音"
           }
         }
       }
@@ -834,6 +868,23 @@
         }
       }
     },
+    "Click to also prevent sleep with the lid closed\nRight click to show menu" : {
+      "comment" : "Click to also prevent sleep with the lid closed\nRight click to show menu",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点按以在合盖时也防止进入睡眠模式\n右击以显示菜单"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下讓系統在闔上螢幕時也不進入睡眠\n使用輔助按鈕（右鍵）顯示選單"
+          }
+        }
+      }
+    },
     "Click to prevent sleep\nRight click to show menu" : {
       "comment" : "Click to prevent sleep\\nRight click to show menu",
       "extractionState" : "manual",
@@ -962,6 +1013,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點一下防止系統進入睡眠狀態\n使用輔助按鈕（右鍵）顯示選單"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "comment" : "Continue",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繼續"
+          }
+        }
+      }
+    },
+    "Could Not Keep Your Mac Awake with the Lid Closed" : {
+      "comment" : "Could Not Keep Your Mac Awake with the Lid Closed",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法在合盖时保持 Mac 唤醒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法在闔上螢幕時讓 Mac 保持喚醒"
           }
         }
       }
@@ -1372,6 +1457,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "∞"
+          }
+        }
+      }
+    },
+    "Keep Your Mac Awake with the Lid Closed?" : {
+      "comment" : "Keep Your Mac Awake with the Lid Closed?",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖时也保持 Mac 唤醒？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闔上螢幕時也讓 Mac 保持喚醒？"
           }
         }
       }
@@ -2311,6 +2413,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "數值無效，請重新輸入。"
+          }
+        }
+      }
+    },
+    "This changes a system power setting, which needs your administrator password once. Afterwards it changes without a password. You can remove this permission in Settings > Advanced." : {
+      "comment" : "This changes a system power setting, which needs your administrator password once. Afterwards it changes without a password. You can remove this permission in Settings > Advanced.",
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这需要修改一项系统电源设置，只需输入一次管理员密码，之后切换不再需要密码。你可以在“设置 > 高级”中移除这项授权。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這需要修改一項系統電源設定，只需輸入一次管理者密碼，之後切換不再需要密碼。你可以在「設定 > 進階」中移除這項授權。"
           }
         }
       }

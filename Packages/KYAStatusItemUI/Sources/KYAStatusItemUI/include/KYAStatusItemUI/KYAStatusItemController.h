@@ -17,7 +17,9 @@ typedef NS_ENUM(NSUInteger, KYAStatusItemAppearance)
     /// Represents the inactive state of the status bar item
     KYAStatusItemAppearanceInactive = 0,
     /// Represents the active state of the status bar item
-    KYAStatusItemAppearanceActive
+    KYAStatusItemAppearanceActive,
+    /// Represents the active state that also keeps the Mac awake with its lid closed
+    KYAStatusItemAppearanceActiveClosedLid
 };
 
 @protocol KYAStatusItemControllerDataSource;
@@ -31,6 +33,10 @@ typedef NS_ENUM(NSUInteger, KYAStatusItemAppearance)
 
 /// Controls the activate/inactive appearance of the status item image.
 @property (nonatomic) KYAStatusItemAppearance appearance;
+
+/// YES if a click on the active item moves on to the closed lid state;
+/// picks the tooltip.
+@property (nonatomic) BOOL closedLidAvailable;
 
 /// A delegate for receiving click events.
 @property (weak, nonatomic, nullable) id<KYAStatusItemControllerDataSource> dataSource;

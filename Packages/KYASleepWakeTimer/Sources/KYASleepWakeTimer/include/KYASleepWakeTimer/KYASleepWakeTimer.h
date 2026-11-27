@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <KYAApplicationSupport/KYAApplicationSupport.h>
 #import <KYACommon/KYAExport.h>
+#import <KYASleepWakeTimer/KYASleepDisabler.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,6 +34,20 @@ typedef void (^KYASleepWakeTimerCompletionBlock)(BOOL cancelled);
 
 /// Returns YES if a task is scheduled and running.
 @property (readonly, nonatomic, getter=isScheduled) BOOL scheduled;
+
+/// YES while the timer also keeps the Mac awake with its lid closed.
+///
+/// Turning it on only works while the timer is scheduled and needs the
+/// KYASleepDisabler authorization; it turns off when the timer stops.
+@property (readonly, nonatomic, getter=isClosedLidEnabled) BOOL closedLidEnabled;
+
+/// Keeps the Mac awake with its lid closed until the timer stops.
+/// @param error Set when the system setting cannot be changed; nil when
+///              the timer is not scheduled
+- (BOOL)enableClosedLidWithError:(NSError **)error;
+
+/// Lets the Mac sleep again when its lid is closed; the timer keeps running.
+- (void)disableClosedLid;
 
 /// An optional completion block when the task finishes at the fireDate
 /// or when invalidate is called manually.

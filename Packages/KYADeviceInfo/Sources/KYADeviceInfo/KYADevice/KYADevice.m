@@ -10,15 +10,18 @@
 #import <KYACommon/KYACommon.h>
 #import "../KYABatteryMonitor/KYABatteryMonitor+Private.h"
 #import "../KYALowPowerModeMonitor/KYALowPowerModeMonitor+Private.h"
+#import "../KYALidMonitor/KYALidMonitor+Private.h"
 
 const NSNotificationName KYADeviceParameterDidChangeNotification = @"KYADeviceParameterDidChangeNotification";
 NSString * const KYADeviceParameterKey = @"KYADeviceParameterKey";
 const KYADeviceParameter KYADeviceParameterBattery = @"KYADeviceParameterBattery";
 const KYADeviceParameter KYADeviceParameterLowPowerMode = @"KYADeviceParameterLowPowerMode";
+const KYADeviceParameter KYADeviceParameterLid = @"KYADeviceParameterLid";
 
 @interface KYADevice ()
 @property (nonatomic, readwrite) KYABatteryMonitor *batteryMonitor;
 @property (nonatomic, readwrite) KYALowPowerModeMonitor *lowPowerModeMonitor;
+@property (nonatomic, readwrite) KYALidMonitor *lidMonitor;
 @property (nonatomic) os_log_t log;
 @end
 
@@ -43,6 +46,7 @@ const KYADeviceParameter KYADeviceParameterLowPowerMode = @"KYADeviceParameterLo
     {
         self.batteryMonitor = [KYABatteryMonitor new];
         self.lowPowerModeMonitor = [KYALowPowerModeMonitor new];
+        self.lidMonitor = [KYALidMonitor new];
         self.log = KYALogCreateWithCategory("DeviceInfo");
     }
     return self;
@@ -118,6 +122,42 @@ const KYADeviceParameter KYADeviceParameterLowPowerMode = @"KYADeviceParameterLo
     }
     
     os_log(self.log, "Low Power Mode Monitoring: %{public}@", lowPowerModeMonitoringEnabled ? @"YES" : @"NO");
+}
+
+#pragma mark - Lid
+
+- (BOOL)isLidMonitoringEnabled
+{
+    return [self.lidMonitor isRegistered];
+}
+
+- (void)setLidMonitoringEnabled:(BOOL)lidMonitoringEnabled
+{
+    Auto lidMonitor = self.lidMonitor;
+    
+    if(lidMonitoringEnabled)
+    {
+        // Do not start monitoring if the device does not support this feature
+        if([lidMonitor hasLid] == NO) { return; }
+        
+        AutoWeak weakSelf = self;
+        lidMonitor.lidChangeHandler = ^(BOOL closed) {
+            Auto strongSelf = weakSelf;
+            
+            if([strongSelf isLidMonitoringEnabled])
+            {
+                [strongSelf deviceParameterDidChange:KYADeviceParameterLid];
+            }
+        };
+        [lidMonitor registerForLidChanges];
+    }
+    else
+    {
+        [lidMonitor unregisterFromLidChanges];
+        lidMonitor.lidChangeHandler = nil;
+    }
+    
+    os_log(self.log, "Lid Monitoring: %{public}@", lidMonitoringEnabled ? @"YES" : @"NO");
 }
 
 #pragma mark - Notifications

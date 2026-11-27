@@ -14,6 +14,10 @@
     NSLocalizedString(@"Click to allow sleep\nRight click to show menu", \
     @"Click to allow sleep\nRight click to show menu")
 
+#define KYA_L10N_CLICK_TO_PREVENT_SLEEP_WITH_LID_CLOSED \
+    NSLocalizedString(@"Click to also prevent sleep with the lid closed\nRight click to show menu", \
+    @"Click to also prevent sleep with the lid closed\nRight click to show menu")
+
 #define KYA_L10N_CLICK_TO_PREVENT_SLEEP \
     NSLocalizedString(@"Click to prevent sleep\nRight click to show menu", \
     @"Click to prevent sleep\nRight click to show menu")
