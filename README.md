@@ -1,45 +1,101 @@
-# KeepingYouAwake
+# MaCaffeinate
 
-KeepingYouAwake is a small menu bar utility for macOS *(Version 10.13 and newer)* that can prevent your Mac from entering sleep mode for a predefined duration or as long as it is activated.
+MaCaffeinate is a menu bar app for macOS 12 and newer that keeps your Mac awake, for a set duration or until you turn it off. On a MacBook it can also keep the Mac awake with the lid closed.
 
-https://keepingyouawake.app/
+## Install
 
-## Installation
+1. Download `MaCaffeinate.zip` from the [latest release](https://github.com/hnyls2002/MaCaffeinate/releases/latest), unzip it, and move `MaCaffeinate.app` to Applications.
+2. The app is not notarized, so macOS blocks its first launch. Open System Settings > Privacy & Security and click Open Anyway, or run:
 
-**[Download the latest version here.](https://github.com/newmarcel/KeepingYouAwake/releases/latest)**
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/MaCaffeinate.app
+   ```
 
-or install it via [cask](http://caskroom.github.io/): `brew install --cask keepingyouawake`.
+## Usage
 
-<img src="./Extras/Screenshot@2x.jpg" width="500" />
+Click the cup in the menu bar to step through three states:
 
-## How does it work?
+1. **Off**: the Mac sleeps as usual.
+2. **Awake**: the Mac stays awake while the lid is open.
+3. **Awake with the lid closed**: the Mac also stays awake when you close the lid. A bolt appears next to the cup.
 
-The app is a small wrapper around Apple's `caffeinate` command line utility. All current versions of macOS ship with this tool by default. You can read the manual page [here](https://web.archive.org/web/20140604153141/https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man8/caffeinate.8.html).
+The next click turns it off. A Mac without a lid has only the first two states.
 
-### Does it work on a MacBook with a closed lid?
+Right-click the cup for the menu: activate for a set duration, open Settings, or quit.
 
-No. Because of _(sensible)_ macOS limitations and out of thermal considerations, KeepingYouAwake will only prevent sleep on desktop Macs and portable Macs with an open lid.
+## Closed-lid mode
 
-## Is this dangerous?
+A MacBook goes to sleep when its lid closes, even while `caffeinate` holds it awake. Closed-lid mode runs `pmset -a disablesleep 1` to turn that sleep off, and `pmset -a disablesleep 0` to turn it back on.
 
-This utility will not harm your Mac because it is based on an official command line tool by Apple. **BUT** I cannot guarantee anything, so use this tool **AT YOUR OWN RISK**.
+### Permission
 
-## Inspired by Caffeine
+`pmset` needs administrator rights. The first time you switch to closed-lid mode, MaCaffeinate asks for your administrator password once and installs `/etc/sudoers.d/macaffeinate-<your user id>`. That file lets your user run only these two commands without a password:
 
-*KeepingYouAwake* is inspired by *[Caffeine](https://web.archive.org/web/20240625031548/https://www.lightheadsw.com/caffeine/)* from *Lighthead Software*. I used it for many years, but sadly it hasn't been updated in a while. Eventually in 2014 I decided to build a replacement for myself that was optimized for macOS Yosemite and used the [`caffeinate`](https://web.archive.org/web/20140604153141/https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man8/caffeinate.8.html) command line tool under the hood.
+```text
+/usr/bin/pmset -a disablesleep 0
+/usr/bin/pmset -a disablesleep 1
+```
 
-## Still using old macOS versions?
+If you cancel instead, clicks skip closed-lid mode until you allow it in Settings > Advanced.
 
-- [Version 1.6.8](https://github.com/newmarcel/KeepingYouAwake/releases/tag/1.6.8) is the last release that supports macOS Big Sur and older (11.0, 10.15, 10.14, 10.13)
-- [Version 1.6.2](https://github.com/newmarcel/KeepingYouAwake/releases/tag/1.6.2) is the last release that supports macOS Sierra (10.12)
-- [Version 1.5.2](https://github.com/newmarcel/KeepingYouAwake/releases/tag/1.5.2) is the last release that supports macOS Yosemite (10.10) and El Capitan (10.11)
+### When sleep comes back
 
-## Contribution Guidelines
+MaCaffeinate turns sleep back on when:
 
-If you plan to contribute to the project, I recommend taking a look at the [Contribution Guidelines](./CONTRIBUTING.md). These should cover common questions and will be updated over time.
+- you click the cup again, or the activation duration ends;
+- the battery falls below the level set in Settings > Battery, or Low Power Mode turns on, if you turned those options on;
+- MaCaffeinate quits, crashes, or is force quit;
+- MaCaffeinate launches again after the Mac lost power with closed-lid mode on.
+
+> **Note:** a closed MacBook that stays awake can get hot in a bag or sleeve. Turn on the battery level option in Settings > Battery if you use closed-lid mode on battery.
+
+### Lid-close beep
+
+When you close the lid in closed-lid mode, MaCaffeinate plays a loud beep, so the Mac does not go into a bag awake by accident.
+
+- On the built-in speakers, it unmutes and raises the volume to at least 75% for the beep, then restores your volume.
+- On headphones and other outputs, it plays at your current volume.
+- Turn it off in Settings > Advanced.
+
+### Check or remove it
+
+Check whether sleep is turned off right now (`SleepDisabled 1` means it is):
+
+```bash
+pmset -g | grep SleepDisabled
+```
+
+To remove the permission, untick "Allow keeping the Mac awake with the lid closed" in Settings > Advanced, or run:
+
+```bash
+sudo rm /etc/sudoers.d/macaffeinate-$(id -u)
+sudo pmset -a disablesleep 0
+```
+
+## Automation
+
+The `macaffeinate://` URL scheme starts and stops MaCaffeinate from scripts, for example:
+
+```bash
+open -g "macaffeinate:///activate?minutes=30"
+open -g "macaffeinate:///deactivate"
+```
+
+URL actions switch between off and awake only; closed-lid mode is turned on from the menu bar. See [Automation](Documentation/Automation.md) for every action.
+
+## Build
+
+Open `KeepingYouAwake.xcworkspace` in Xcode 26 or later and build the `KeepingYouAwake` scheme, or build an ad-hoc signed app from the command line as CI does:
+
+```bash
+xcodebuild build -workspace KeepingYouAwake.xcworkspace -scheme KeepingYouAwake \
+  -configuration Release -derivedDataPath build \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= \
+  PROVISIONING_PROFILE_SPECIFIER= OTHER_CODE_SIGN_FLAGS=
+```
+
+The app lands in `build/Build/Products/Release/MaCaffeinate.app`.
 
 ## License
 
-Everything in this project is licensed under the [MIT license](http://opensource.org/licenses/MIT). Provided image assets are also covered by this license.
-
-*Although it's not required please do not redistribute forked versions of the app with the same name and icon. Thanks!*
+MIT; see [LICENSE](LICENSE). MaCaffeinate is a fork of [KeepingYouAwake](https://github.com/newmarcel/KeepingYouAwake) by Marcel Dierkes.
